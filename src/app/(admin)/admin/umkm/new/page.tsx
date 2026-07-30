@@ -13,7 +13,7 @@ export default async function CreateUmkmPage() {
 
   return (
     <div>
-      <h1 className="mb-8 text-2xl font-medium tracking-tight text-[#1A1A1A]">
+      <h1 className="mb-8 text-2xl font-normal tracking-tight text-foreground">
         Tambah UMKM Baru
       </h1>
       <div className="max-w-3xl">
@@ -21,6 +21,7 @@ export default async function CreateUmkmPage() {
           categories={categories.map((c) => ({ id: c.id, name: c.name }))}
           onSubmit={handleSubmit}
           submitLabel="Tambah UMKM"
+          redirectTo="/admin/umkm"
         />
       </div>
     </div>

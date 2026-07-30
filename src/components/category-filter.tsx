@@ -24,10 +24,10 @@ export function CategoryFilter({
             key={cat.value}
             onClick={() => onChange(cat.value)}
             className={cn(
-              "shrink-0 rounded-full px-4 py-2 text-xs font-medium transition-all duration-300 border",
+              "shrink-0 px-4 py-2 rounded text-xs font-semibold uppercase tracking-[0.15em] transition-all duration-150 border",
               active === cat.value
-                ? "bg-[#1A1A1A] text-white border-[#1A1A1A]"
-                : "bg-white text-[#6B6B6B] border-[#E5E2DD] hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
+                ? "bg-foreground text-background border-foreground"
+                : "bg-transparent text-muted-foreground border-border hover:border-foreground hover:text-foreground"
             )}
           >
             {cat.label}

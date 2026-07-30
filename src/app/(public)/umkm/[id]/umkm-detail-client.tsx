@@ -28,7 +28,7 @@ export function UmkmDetailClient({
   if (!selectedImage) {
     return (
       <div className="space-y-4">
-        <div className="aspect-[4/5] w-full overflow-hidden rounded-2xl bg-[#EDEAE6] flex items-center justify-center text-[#6B6B6B]">
+        <div className="aspect-[4/5] w-full overflow-hidden bg-surface-container-low flex items-center justify-center text-muted-foreground">
           Tidak ada gambar
         </div>
       </div>
@@ -37,7 +37,7 @@ export function UmkmDetailClient({
 
   return (
     <div className="space-y-4">
-      <div className="aspect-[4/5] w-full overflow-hidden rounded-2xl bg-[#EDEAE6]">
+      <div className="aspect-[4/5] w-full overflow-hidden bg-surface-container-low">
         <AnimatePresence mode="wait">
           <motion.div
             key={selectedImage.id}
@@ -66,10 +66,10 @@ export function UmkmDetailClient({
             <button
               key={img.id}
               onClick={() => setSelectedIndex(index)}
-              className={`w-20 h-20 shrink-0 overflow-hidden rounded-lg transition-all duration-200 ${
+              className={`w-20 h-20 shrink-0 overflow-hidden transition-all duration-200 ${
                 selectedIndex === index
-                  ? "ring-2 ring-[#C8603D] ring-offset-2"
-                  : "border border-[#E5E2DD] hover:border-[#6B6B6B]"
+                  ? "ring-2 ring-foreground ring-offset-2"
+                  : "opacity-60 hover:opacity-100"
               }`}
             >
               <Image

@@ -41,15 +41,15 @@ export function DeleteUmkmButton({ id }: { id: string }) {
         {isDeleting ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
         ) : (
-          <Trash2 className="h-3.5 w-3.5 text-[#6B6B6B] hover:text-[#D94F4F]" />
+          <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-red-500" />
         )}
       </AlertDialogTrigger>
-      <AlertDialogContent className="rounded-xl border-[#E5E2DD] bg-white">
+      <AlertDialogContent className="border-border bg-background">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-base font-medium text-[#1A1A1A]">
+          <AlertDialogTitle className="text-base font-normal text-foreground">
             Hapus UMKM?
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-sm text-[#6B6B6B]">
+          <AlertDialogDescription className="text-sm text-muted-foreground">
             Tindakan ini tidak dapat dibatalkan. Semua data termasuk gambar dan
             tautan sosial media akan dihapus permanen.
           </AlertDialogDescription>
@@ -58,7 +58,7 @@ export function DeleteUmkmButton({ id }: { id: string }) {
           <AlertDialogCancel className="text-sm">Batal</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
-            className="bg-[#D94F4F] text-white hover:bg-[#D94F4F]/90 text-sm"
+            className="bg-red-500 text-white hover:bg-red-500/90 text-sm font-normal"
           >
             Hapus
           </AlertDialogAction>

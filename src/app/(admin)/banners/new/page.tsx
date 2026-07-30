@@ -10,10 +10,10 @@ export default function NewBannerPage() {
 
   return (
     <div>
-      <h1 className="mb-8 text-2xl font-medium tracking-tight text-[#1A1A1A]">
+      <h1 className="mb-8 text-2xl font-normal tracking-tight text-foreground">
         Tambah Banner
       </h1>
-      <div className="max-w-2xl">
+      <div className="rounded-[12px] border border-border/50 bg-card p-6 max-w-2xl">
         <BannerForm onSubmit={handleSubmit} submitLabel="Tambah Banner" />
       </div>
     </div>

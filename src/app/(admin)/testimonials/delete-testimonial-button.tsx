@@ -36,27 +36,27 @@ export function DeleteTestimonialButton({ id }: { id: string }) {
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8 text-[#D94F4F] hover:text-[#D94F4F] hover:bg-red-50" />}>
+      <AlertDialogTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-500" />}>
         <Trash2 className="h-3.5 w-3.5" />
       </AlertDialogTrigger>
-      <AlertDialogContent className="bg-white border-[#E5E2DD]">
+      <AlertDialogContent className="bg-background border-border">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-[#1A1A1A]">
+          <AlertDialogTitle className="text-foreground">
             Hapus Testimonial
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-[#6B6B6B]">
+          <AlertDialogDescription className="text-muted-foreground">
             Apakah Anda yakin ingin menghapus testimonial ini? Tindakan ini
             tidak dapat dibatalkan.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="border-[#E5E2DD] text-[#6B6B6B]">
+          <AlertDialogCancel className="border-border text-muted-foreground">
             Batal
           </AlertDialogCancel>
           <Button
             onClick={handleDelete}
             disabled={isDeleting}
-            className="bg-[#D94F4F] text-white hover:bg-[#c44545]"
+            className="bg-red-500 text-white hover:bg-red-600"
           >
             {isDeleting ? "Menghapus..." : "Hapus"}
           </Button>

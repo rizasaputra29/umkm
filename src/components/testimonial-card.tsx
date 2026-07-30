@@ -14,16 +14,15 @@ export function TestimonialCard({
   className,
 }: TestimonialCardProps) {
   return (
-    <div className={cn("flex flex-col", className)}>
-      <blockquote className="text-base leading-relaxed text-[#1A1A1A]/80 md:text-lg">
+    <div className={cn("rounded-[12px] border border-border bg-card p-6", className)}>
+      <blockquote className="text-base leading-relaxed text-foreground/80 md:text-lg tracking-[-0.01em]">
         &ldquo;{quote}&rdquo;
       </blockquote>
       <div className="mt-4 flex items-center gap-3">
-        <div className="h-px w-8 bg-[#C8603D]" />
         <div>
-          <p className="text-sm font-medium text-[#1A1A1A]">{author}</p>
+          <p className="text-sm font-medium text-foreground">{author}</p>
           {role && (
-            <p className="text-xs text-[#6B6B6B]">{role}</p>
+            <p className="text-xs text-muted-foreground tracking-[0.05em]">{role}</p>
           )}
         </div>
       </div>

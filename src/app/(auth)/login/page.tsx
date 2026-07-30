@@ -46,21 +46,21 @@ function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <div className="space-y-1">
-        <h1 className="text-xl font-medium text-[#1A1A1A]">Masuk</h1>
-        <p className="text-sm text-[#6B6B6B]">
+        <h1 className="text-xl font-display font-normal text-foreground tracking-tight">Masuk</h1>
+        <p className="text-sm text-muted-foreground">
           Selamat datang kembali
         </p>
       </div>
 
       {error && (
-        <div className="rounded-lg bg-[#D94F4F]/5 px-4 py-3 text-sm text-[#D94F4F]">
+        <div className="px-4 py-3 text-sm text-red-600">
           {error}
         </div>
       )}
 
       <div className="space-y-5">
         <div className="space-y-2">
-          <FieldLabel htmlFor="email" className="text-[11px] font-medium uppercase tracking-[0.15em] text-[#6B6B6B]">
+          <FieldLabel htmlFor="email" className="text-[11px] font-bold tracking-[0.15em] text-muted-foreground">
             Email
           </FieldLabel>
           <Input
@@ -69,12 +69,12 @@ function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="email@example.com"
-            className="h-10 border-0 border-b border-[#D5D0CA] bg-transparent px-0 text-sm text-[#1A1A1A] focus-visible:ring-0 focus-visible:border-[#1A1A1A]"
+            className="h-10 border-0 border-b-2 border-border bg-transparent px-0 text-sm text-foreground focus-visible:border-foreground"
             required
           />
         </div>
         <div className="space-y-2">
-          <FieldLabel htmlFor="password" className="text-[11px] font-medium uppercase tracking-[0.15em] text-[#6B6B6B]">
+          <FieldLabel htmlFor="password" className="text-[11px] font-bold tracking-[0.15em] text-muted-foreground">
             Password
           </FieldLabel>
           <Input
@@ -83,7 +83,7 @@ function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="h-10 border-0 border-b border-[#D5D0CA] bg-transparent px-0 text-sm text-[#1A1A1A] focus-visible:ring-0 focus-visible:border-[#1A1A1A]"
+            className="h-10 border-0 border-b-2 border-border bg-transparent px-0 text-sm text-foreground focus-visible:border-foreground"
             required
           />
         </div>
@@ -91,8 +91,8 @@ function LoginForm() {
 
       <Button
         type="submit"
-        variant="coffee"
-        className="w-full h-10 gap-2 text-sm"
+        variant="default"
+        className="w-full h-10 gap-2 text-sm font-bold tracking-widest"
         disabled={loading}
       >
         {loading ? (
@@ -105,27 +105,18 @@ function LoginForm() {
         )}
       </Button>
 
-      <p className="text-center text-sm text-[#6B6B6B]">
-        Belum punya akun?{" "}
-        <Link
-          href="/register"
-          className="text-[#C8603D] hover:text-[#1A1A1A] transition-colors"
-        >
-          Daftar
-        </Link>
-      </p>
     </form>
   );
 }
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-6 bg-[#F5F3F0]">
+    <div className="flex min-h-screen flex-col items-center justify-center px-6 bg-background">
       <div className="w-full max-w-sm">
         <div className="mb-12 text-center">
           <Link
             href="/"
-            className="text-lg font-semibold tracking-tight text-[#1A1A1A]"
+            className="text-lg font-display font-normal tracking-tight text-foreground"
           >
             UMKM Lokal
           </Link>
@@ -133,7 +124,7 @@ export default function LoginPage() {
 
         <Suspense fallback={
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-5 w-5 animate-spin text-[#6B6B6B]" />
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
         }>
           <LoginForm />

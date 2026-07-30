@@ -1,45 +1,52 @@
 import { getActiveBanners } from "@/actions/banner";
 import { getAllTestimonials } from "@/actions/testimonial";
 import { getAllUmkm } from "@/actions/umkm";
-import { getAllCategories } from "@/actions/category";
+import { getStats } from "@/actions/stats";
+import { getAboutContent, getMetricsContent } from "@/actions/site-content";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
-import { FullScreenHero } from "@/components/full-screen-hero";
-import { UmkmCatalogSection } from "@/components/umkm-catalog-section";
+import { HeroBlock } from "@/components/hero-block";
+import { AboutSection } from "@/components/about-section";
+import { MetricsSection } from "@/components/metrics-section";
+import { UmkmPreviewSection } from "@/components/umkm-preview-section";
 import { TestimonialSection } from "@/components/testimonial-section";
+import { FaqSection } from "@/components/faq-section";
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ page?: string; q?: string; category?: string }>;
-}) {
-  const params = await searchParams;
-  const page = Number(params.page) || 1;
-  const search = params.q || "";
-  const categoryId = params.category || "";
-
-  const [banners, { data: umkmList, totalPages }, categories, testimonials] =
+export default async function HomePage() {
+  const [banners, { data: umkmList }, testimonials, stats, aboutContent, metricsContent] =
     await Promise.all([
       getActiveBanners(),
-      getAllUmkm(page, search, categoryId),
-      getAllCategories(),
+      getAllUmkm(1, "", "", "newest", "", false),
       getAllTestimonials(),
+      getStats(),
+      getAboutContent(),
+      getMetricsContent(),
     ]);
 
   return (
     <>
       <Navbar />
       <main>
-        <FullScreenHero banners={banners} />
-        <UmkmCatalogSection
-          categories={categories.map((c) => ({ id: c.id, name: c.name }))}
-          umkmList={umkmList}
-          totalPages={totalPages}
-          currentPage={page}
-          currentCategory={categoryId}
-          currentSearch={search}
+        <HeroBlock banners={banners} />
+        <AboutSection
+          title={aboutContent.title}
+          paragraph1={aboutContent.paragraph1}
+          paragraph2={aboutContent.paragraph2}
         />
+        <MetricsSection
+          totalUmkm={stats.totalUmkm}
+          totalActiveUmkm={stats.totalActiveUmkm}
+          totalCategories={stats.totalCategories}
+          totalTestimonials={stats.totalTestimonials}
+          sectionTitle={metricsContent.sectionTitle}
+          label1={metricsContent.label1}
+          label2={metricsContent.label2}
+          label3={metricsContent.label3}
+          label4={metricsContent.label4}
+        />
+        <UmkmPreviewSection umkmList={umkmList} />
         <TestimonialSection testimonials={testimonials} />
+        <FaqSection />
       </main>
       <Footer />
     </>
