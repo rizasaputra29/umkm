@@ -24,7 +24,7 @@ export function TestimonialForm({
 }: TestimonialFormProps) {
   const router = useRouter();
   const form = useForm<TestimonialFormValues>({
-    resolver: zodResolver(testimonialSchema) as any,
+    resolver: zodResolver(testimonialSchema),
     defaultValues: {
       quote: "",
       author: "",
@@ -48,8 +48,8 @@ export function TestimonialForm({
     }
   }
 
-  const inputClass = "h-10 border-0 border-b border-[#D5D0CA] bg-transparent px-0 text-sm text-[#1A1A1A] focus-visible:ring-0 focus-visible:border-[#1A1A1A] placeholder:text-[#6B6B6B]";
-  const labelClass = "text-[11px] font-medium uppercase tracking-[0.15em] text-[#6B6B6B]";
+  const inputClass = "h-10 border-0 border-b border-border bg-transparent px-0 text-sm text-foreground focus-visible:ring-0 focus-visible:border-foreground placeholder:text-muted-foreground";
+  const labelClass = "text-[11px] font-normal tracking-[0.15em] text-muted-foreground";
 
   return (
     <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -116,7 +116,7 @@ export function TestimonialForm({
       </div>
 
       <div className="flex gap-4 pt-4">
-        <Button type="submit" variant="coffee" disabled={isSubmitting} className="gap-2">
+        <Button type="submit" variant="default" disabled={isSubmitting} className="gap-2">
           {isSubmitting ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
@@ -126,7 +126,7 @@ export function TestimonialForm({
             </>
           )}
         </Button>
-        <Button type="button" variant="ghost" onClick={() => router.back()} className="text-[#6B6B6B] hover:text-[#1A1A1A]">
+        <Button type="button" variant="ghost" onClick={() => router.back()} className="text-muted-foreground hover:text-foreground">
           Batal
         </Button>
       </div>
