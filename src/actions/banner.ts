@@ -2,10 +2,11 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/admin-auth";
 
 export async function getAllBanners() {
+  await requireAdmin();
   return prisma.heroBanner.findMany({
-    include: { images: { orderBy: { urutan: "asc" } } },
     orderBy: { order: "asc" },
   });
 }
@@ -13,43 +14,31 @@ export async function getAllBanners() {
 export async function getActiveBanners() {
   return prisma.heroBanner.findMany({
     where: { active: true },
-    include: { images: { orderBy: { urutan: "asc" } } },
     orderBy: { order: "asc" },
   });
 }
 
 export async function getBannerById(id: string) {
+  await requireAdmin();
   const banner = await prisma.heroBanner.findUnique({
     where: { id },
-    include: { images: { orderBy: { urutan: "asc" } } },
   });
   if (!banner) throw new Error("Banner tidak ditemukan");
   return banner;
 }
 
 export async function createBanner(data: {
-  images: { publicId: string; url: string }[];
-  thumbnailIndex: number;
+  image: string;
+  mobileImage?: string;
   title?: string;
   subtitle?: string;
   link?: string;
   active?: boolean;
   order?: number;
 }) {
-  const { images, thumbnailIndex, ...rest } = data;
+  await requireAdmin();
   const banner = await prisma.heroBanner.create({
-    data: {
-      ...rest,
-      thumbnailIndex,
-      images: {
-        create: images.map((img, i) => ({
-          publicId: img.publicId,
-          url: img.url,
-          urutan: i,
-        })),
-      },
-    },
-    include: { images: true },
+    data,
   });
   revalidatePath("/");
   revalidatePath("/banners");
@@ -59,8 +48,8 @@ export async function createBanner(data: {
 export async function updateBanner(
   id: string,
   data: {
-    images: { publicId: string; url: string }[];
-    thumbnailIndex: number;
+    image: string;
+    mobileImage?: string;
     title?: string;
     subtitle?: string;
     link?: string;
@@ -68,22 +57,10 @@ export async function updateBanner(
     order?: number;
   }
 ) {
-  const { images, thumbnailIndex, ...rest } = data;
+  await requireAdmin();
   const banner = await prisma.heroBanner.update({
     where: { id },
-    data: {
-      ...rest,
-      thumbnailIndex,
-      images: {
-        deleteMany: {},
-        create: images.map((img, i) => ({
-          publicId: img.publicId,
-          url: img.url,
-          urutan: i,
-        })),
-      },
-    },
-    include: { images: true },
+    data,
   });
   revalidatePath("/");
   revalidatePath("/banners");
@@ -91,6 +68,7 @@ export async function updateBanner(
 }
 
 export async function deleteBanner(id: string) {
+  await requireAdmin();
   await prisma.heroBanner.delete({ where: { id } });
   revalidatePath("/");
   revalidatePath("/banners");

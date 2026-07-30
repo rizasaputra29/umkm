@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { ImagePlus, X, Loader2, Check } from "lucide-react";
 import { useRef, useState, useCallback } from "react";
 import { toast } from "sonner";
@@ -56,15 +57,26 @@ export function ImageUploader({
     }
   }, [value, onChange]);
 
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
   const handleFiles = useCallback(async (files: FileList | File[]) => {
     const remaining = maxImages - value.length - uploading.length;
     const toUpload = Array.from(files).slice(0, remaining);
+
+    const oversized = toUpload.filter((f) => f.size > MAX_FILE_SIZE);
+    if (oversized.length > 0) {
+      toast.error(
+        `${oversized.map((f) => f.name).join(", ")} melebihi batas 5MB`
+      );
+      return;
+    }
+
     if (toUpload.length === 0) {
       toast.error(`Maksimal ${maxImages} gambar`);
       return;
     }
     await Promise.all(toUpload.map(uploadToCloudinary));
-  }, [value.length, uploading.length, maxImages, uploadToCloudinary]);
+    }, [value.length, uploading.length, maxImages, uploadToCloudinary, MAX_FILE_SIZE]);
 
   const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) handleFiles(e.target.files);
@@ -98,18 +110,18 @@ export function ImageUploader({
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`w-full rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-3 py-8 cursor-pointer transition-colors ${
+        className={`w-full border border-dashed flex flex-col items-center justify-center gap-4 py-10 cursor-pointer transition-colors duration-150 ${
           dragOver
-            ? "border-[#6B6B6B] bg-[#F5F3F0]"
-            : "border-[#D5D0CA] hover:border-[#6B6B6B] text-[#6B6B6B] hover:text-[#1A1A1A]"
+            ? "border-foreground bg-surface-container-low"
+            : "border-border hover:border-foreground text-muted-foreground hover:text-foreground"
         }`}
       >
-        <div className="flex items-center gap-2 rounded-lg border border-[#D5D0CA] bg-white px-4 py-2 text-sm font-medium text-[#1A1A1A] shadow-sm">
-          <ImagePlus className="h-4 w-4" />
-          Upload
+        <div className="flex flex-col items-center gap-1.5">
+          <ImagePlus className="h-6 w-6 text-muted-foreground" />
+          <span className="text-sm text-foreground">Upload Gambar</span>
         </div>
-        <span className="text-xs text-[#6B6B6B]">
-          Choose images or drag & drop it here. JPG, JPEG, PNG and WEBP. Max 20 MB.
+        <span className="text-xs text-muted-foreground">
+          JPG, PNG, WEBP. Max 5 MB.
         </span>
       </div>
 
@@ -127,20 +139,21 @@ export function ImageUploader({
           {value.map((image, index) => (
             <div
               key={image.publicId}
-              className={`relative aspect-square rounded-lg overflow-hidden bg-[#EDEAE6] group border cursor-pointer ${
+              className={`relative aspect-square overflow-hidden bg-surface-container-low group border cursor-pointer ${
                 onThumbnailChange && thumbnailIndex === index
-                  ? "border-2 border-[#C8603D]"
-                  : "border border-[#E5E2DD]"
+                  ? "border-2 border-foreground"
+                  : "border border-border"
               }`}
               onClick={() => onThumbnailChange?.(index)}
             >
-              <img
+              <Image
                 src={image.url}
                 alt={`Gambar ${index + 1}`}
-                className="h-full w-full object-cover"
+                fill
+                className="object-cover"
               />
               {onThumbnailChange && thumbnailIndex === index && (
-                <div className="absolute bottom-1.5 left-1.5 bg-[#C8603D] text-white rounded-md px-1.5 py-0.5 text-[10px] font-medium flex items-center gap-1">
+                <div className="absolute bottom-1.5 left-1.5 bg-foreground text-background px-1.5 py-0.5 text-[10px] font-normal flex items-center gap-1">
                   <Check className="h-3 w-3" />
                   Thumbnail
                 </div>
@@ -151,7 +164,7 @@ export function ImageUploader({
                   e.stopPropagation();
                   removeImage(index);
                 }}
-                className="absolute top-2 right-2 w-6 h-6 bg-[#D94F4F] text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -160,15 +173,15 @@ export function ImageUploader({
           {uploading.map((tempId) => (
             <div
               key={tempId}
-              className="relative aspect-square rounded-lg overflow-hidden bg-[#EDEAE6] border border-[#E5E2DD] flex items-center justify-center"
+              className="relative aspect-square overflow-hidden bg-surface-container-low border border-border flex items-center justify-center"
             >
-              <Loader2 className="h-5 w-5 text-[#6B6B6B] animate-spin" />
+              <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
             </div>
           ))}
         </div>
       )}
 
-      <p className="text-[11px] text-[#6B6B6B]">
+      <p className="text-[11px] text-muted-foreground">
         {value.length}/{maxImages} gambar diupload
         {uploading.length > 0 && ` (${uploading.length} mengupload...)`}
       </p>
