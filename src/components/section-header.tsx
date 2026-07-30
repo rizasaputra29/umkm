@@ -26,18 +26,18 @@ export function SectionHeader({
       )}
     >
       {label && (
-        <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.2em] text-[#6B6B6B]">
+        <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
           {label}
         </p>
       )}
       <h2
-        className="font-medium tracking-tight text-[#1A1A1A]"
+        className="font-display font-normal tracking-[-0.03em] text-foreground"
         style={{ fontSize: "clamp(1.5rem, 0.8rem + 2vw, 2.5rem)" }}
       >
         {title}
       </h2>
       {description && (
-        <p className="mt-3 text-sm text-[#6B6B6B] max-w-md mx-auto">
+        <p className="mt-3 text-sm text-muted-foreground max-w-md mx-auto tracking-[-0.01em]">
           {description}
         </p>
       )}

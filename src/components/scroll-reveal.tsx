@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
-import { gsap, useGSAP, ScrollTrigger } from "@/lib/gsap";
+import { useRef, type ReactNode, type ElementType } from "react";
+import { gsap, useGSAP } from "@/lib/gsap";
 
 interface ScrollRevealProps {
   children: ReactNode;
@@ -56,7 +56,7 @@ export function ScrollReveal({
     { scope: ref }
   );
 
-  const Component = Tag as any;
+  const Component = Tag as ElementType;
   return (
     <Component ref={ref} className={className}>
       {children}

@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ScrollReveal } from "./scroll-reveal";
+import { Button } from "./ui/button";
 
 interface Testimonial {
   id: string;
@@ -16,19 +18,25 @@ interface TestimonialSectionProps {
   testimonials: Testimonial[];
 }
 
+const INITIAL_COUNT = 6;
+
 export function TestimonialSection({ testimonials }: TestimonialSectionProps) {
+  const [showAll, setShowAll] = useState(false);
+  const hasMany = testimonials.length > INITIAL_COUNT;
+  const visibleTestimonials =
+    hasMany && !showAll
+      ? testimonials.slice(0, INITIAL_COUNT)
+      : testimonials;
+
   if (testimonials.length === 0) return null;
 
   return (
-    <section id="testimoni" className="py-20 md:py-32 bg-[#F5F3F0]">
-      <div className="max-w-[1280px] mx-auto px-6 md:px-12 lg:px-16">
+    <section id="testimoni" className="py-20 md:py-28 bg-background">
+      <div className="max-w-7xl mx-auto px-6">
         {/* Section Header */}
         <ScrollReveal y={25} className="mb-16 md:mb-20 text-center">
-          <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.2em] text-[#6B6B6B]">
-            Testimoni
-          </p>
           <h2
-            className="font-medium tracking-tight text-[#1A1A1A]"
+            className="font-display font-normal tracking-[-0.03em] text-foreground"
             style={{ fontSize: "clamp(1.5rem, 0.8rem + 2vw, 2.5rem)" }}
           >
             Apa Kata Mereka
@@ -36,70 +44,76 @@ export function TestimonialSection({ testimonials }: TestimonialSectionProps) {
         </ScrollReveal>
 
         {/* Testimonial Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
-            <motion.div
-              key={testimonial.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{
-                duration: 0.6,
-                delay: index * 0.1,
-                ease: [0.25, 0.46, 0.45, 0.94],
-              }}
-              className="group relative bg-white rounded-2xl p-8 border border-[#E5E2DD] hover:border-[#D5D0CA] transition-colors"
-            >
-              {/* Quote mark */}
-              <div className="absolute top-6 right-8">
-                <svg
-                  width="32"
-                  height="32"
-                  viewBox="0 0 32 32"
-                  fill="none"
-                  className="text-[#C8603D]/10"
-                >
-                  <path
-                    d="M9.333 18.667c0 2.946-2.387 5.333-5.333 5.333V18.667c0-1.1.9-2 2-2h2v-2.667H6c-2.56 0-4.667 2.107-4.667 4.667v5.333C1.333 27.253 4.08 30 7.333 30c2.947 0 5.334-2.387 5.334-5.333 0-2.56-2.107-4.667-4.667-4.667H9.333zM24.667 18.667c0 2.946-2.387 5.333-5.334 5.333V18.667c0-1.1.9-2 2-2h2v-2.667h-2c-2.56 0-4.667 2.107-4.667 4.667v5.333c0 3.253 2.747 6 6 6 2.947 0 5.334-2.387 5.334-5.333 0-2.56-2.107-4.667-4.667-4.667h1.334z"
-                    fill="currentColor"
-                  />
-                </svg>
-              </div>
+        <AnimatePresence mode="popLayout">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {visibleTestimonials.map((testimonial, index) => (
+              <motion.div
+                key={testimonial.id}
+                layout
+                initial={{ opacity: 0, y: 20, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -20, scale: 0.97 }}
+                transition={{
+                  duration: 0.5,
+                  delay: index * 0.05,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+                className="group relative p-8 border border-border/50 rounded-[12px] bg-card flex flex-col"
+              >
+                {/* Quote */}
+                <blockquote className="font-sans text-base text-foreground leading-relaxed mb-8 tracking-[-0.01em]">
+                  &ldquo;{testimonial.quote}&rdquo;
+                </blockquote>
 
-              {/* Quote */}
-              <blockquote className="font-sans text-base text-[#1A1A1A] leading-relaxed mb-8">
-                &ldquo;{testimonial.quote}&rdquo;
-              </blockquote>
-
-              {/* Author */}
-              <div className="flex items-center gap-3 mt-auto">
-                {testimonial.avatar ? (
-                  <Image
-                    src={testimonial.avatar}
-                    alt={testimonial.author}
-                    width={44}
-                    height={44}
-                    className="rounded-full object-cover w-11 h-11"
-                  />
-                ) : (
-                  <div className="w-11 h-11 rounded-full bg-[#EDEAE6] flex items-center justify-center text-sm font-medium text-[#6B6B6B]">
-                    {testimonial.author.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <div>
-                  <p className="font-sans text-sm font-medium text-[#1A1A1A]">
-                    {testimonial.author}
-                  </p>
-                  {testimonial.role && (
-                    <p className="font-sans text-xs text-[#6B6B6B]">
-                      {testimonial.role}
-                    </p>
+                {/* Author */}
+                <div className="flex items-center gap-3 mt-auto">
+                  {testimonial.avatar ? (
+                    <Image
+                      src={testimonial.avatar}
+                      alt={testimonial.author}
+                      width={40}
+                      height={40}
+                      className="object-cover w-10 h-10 rounded-full"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-white border border-border flex items-center justify-center text-xs font-medium text-foreground shrink-0">
+                      {testimonial.author.charAt(0).toUpperCase()}
+                    </div>
                   )}
+                  <div className="min-w-0">
+                    <p className="font-sans text-sm font-medium text-foreground truncate">
+                      {testimonial.author}
+                    </p>
+                    {testimonial.role && (
+                      <p className="font-sans text-xs text-muted-foreground tracking-[0.05em] truncate">
+                        {testimonial.role}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              </motion.div>
+            ))}
+          </div>
+        </AnimatePresence>
+
+        {/* Accordion Toggle */}
+        {hasMany && (
+          <motion.div
+            layout
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-10 text-center"
+          >
+            <Button
+              variant="outline"
+              onClick={() => setShowAll(!showAll)}
+            >
+              {showAll
+                ? "Tutup"
+                : `Lihat ${testimonials.length - INITIAL_COUNT} Testimoni Lainnya`}
+            </Button>
+          </motion.div>
+        )}
       </div>
     </section>
   );
