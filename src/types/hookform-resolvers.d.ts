@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 declare module "@hookform/resolvers/zod" {
   import type { Resolver } from "react-hook-form";
   import type { ZodSchema } from "zod";
