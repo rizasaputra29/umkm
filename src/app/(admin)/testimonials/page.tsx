@@ -18,31 +18,31 @@ export default async function TestimonialsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-medium tracking-tight text-[#1A1A1A]">
+        <h1 className="text-2xl font-normal tracking-tight text-foreground">
           Testimonials
         </h1>
         <Link href="/testimonials/new">
-          <Button variant="coffee" className="gap-2">
+          <Button variant="default" className="gap-2">
             <Plus className="h-4 w-4" />
             Tambah Testimonial
           </Button>
         </Link>
       </div>
 
-      <div className="rounded-xl border border-[#E5E2DD] bg-white overflow-hidden">
+      <div className="rounded-[12px] border border-border/50 bg-card p-6">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className="text-[11px] uppercase tracking-[0.15em] text-[#6B6B6B]">
+              <TableHead className="text-[11px] tracking-[0.15em] text-muted-foreground">
                 Quote
               </TableHead>
-              <TableHead className="text-[11px] uppercase tracking-[0.15em] text-[#6B6B6B]">
+              <TableHead className="text-[11px] tracking-[0.15em] text-muted-foreground">
                 Author
               </TableHead>
-              <TableHead className="text-[11px] uppercase tracking-[0.15em] text-[#6B6B6B]">
+              <TableHead className="text-[11px] tracking-[0.15em] text-muted-foreground">
                 Role
               </TableHead>
-              <TableHead className="text-[11px] uppercase tracking-[0.15em] text-[#6B6B6B] text-right">
+              <TableHead className="text-[11px] tracking-[0.15em] text-muted-foreground text-right">
                 Aksi
               </TableHead>
             </TableRow>
@@ -50,20 +50,20 @@ export default async function TestimonialsPage() {
           <TableBody>
             {testimonials.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-12 text-[#6B6B6B]">
+                <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
                   Belum ada testimonial
                 </TableCell>
               </TableRow>
             ) : (
               testimonials.map((t) => (
-                <TableRow key={t.id}>
-                  <TableCell className="max-w-xs truncate text-sm text-[#1A1A1A]">
+                <TableRow key={t.id} className="hover:bg-muted/50">
+                  <TableCell className="max-w-xs truncate text-sm text-foreground">
                     &ldquo;{t.quote}&rdquo;
                   </TableCell>
-                  <TableCell className="text-sm text-[#1A1A1A]">
+                  <TableCell className="text-sm text-foreground">
                     {t.author}
                   </TableCell>
-                  <TableCell className="text-sm text-[#6B6B6B]">
+                  <TableCell className="text-sm text-muted-foreground">
                     {t.role || "-"}
                   </TableCell>
                   <TableCell className="text-right">
@@ -72,7 +72,7 @@ export default async function TestimonialsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-[#6B6B6B] hover:text-[#1A1A1A]"
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>

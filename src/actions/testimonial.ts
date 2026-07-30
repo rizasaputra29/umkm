@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/admin-auth";
 
 export async function getAllTestimonials() {
   return prisma.testimonial.findMany({
@@ -21,6 +22,7 @@ export async function createTestimonial(data: {
   role?: string;
   avatar?: string;
 }) {
+  await requireAdmin();
   const testimonial = await prisma.testimonial.create({ data });
   revalidatePath("/");
   revalidatePath("/testimonials");
@@ -31,6 +33,7 @@ export async function updateTestimonial(
   id: string,
   data: { quote: string; author: string; role?: string; avatar?: string }
 ) {
+  await requireAdmin();
   const testimonial = await prisma.testimonial.update({
     where: { id },
     data,
@@ -41,6 +44,7 @@ export async function updateTestimonial(
 }
 
 export async function deleteTestimonial(id: string) {
+  await requireAdmin();
   await prisma.testimonial.delete({ where: { id } });
   revalidatePath("/");
   revalidatePath("/testimonials");
