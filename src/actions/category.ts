@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/admin-auth";
 
 export async function getAllCategories() {
   return prisma.category.findMany({
@@ -17,6 +18,7 @@ export async function getCategoryById(id: string) {
 }
 
 export async function createCategory(data: { name: string; slug: string }) {
+  await requireAdmin();
   const maxOrder = await prisma.category.aggregate({ _max: { order: true } });
   const category = await prisma.category.create({
     data: {
@@ -34,6 +36,7 @@ export async function updateCategory(
   id: string,
   data: { name: string; slug: string }
 ) {
+  await requireAdmin();
   const category = await prisma.category.update({
     where: { id },
     data: { name: data.name, slug: data.slug },
@@ -44,6 +47,7 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(id: string) {
+  await requireAdmin();
   const umkmsCount = await prisma.umkm.count({
     where: { categoryId: id },
   });

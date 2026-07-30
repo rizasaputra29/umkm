@@ -2,12 +2,14 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { Search, X, MapPin } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { MinimalPagination } from "./minimal-pagination";
+import { motion } from "framer-motion";
 import { PageContainer } from "./page-container";
+import { SearchInput } from "./search-input";
+import { SortDropdown, type SortOption } from "./sort-dropdown";
+import { FilterChips, type FilterChip } from "./filter-chips";
+import { UmkmCard } from "./umkm-card";
+import { cn } from "@/lib/utils";
 
 interface Category {
   id: string;
@@ -16,17 +18,33 @@ interface Category {
 
 interface UmkmImage {
   id: string;
+  publicId: string;
   url: string;
+  urutan: number;
 }
 
 interface Umkm {
   id: string;
   namaUsaha: string;
+  deskripsi: string;
   alamat: string;
+  namaPemilik: string;
+  whatsapp: string;
+  tanggalMulai: Date;
   thumbnailIndex: number;
+  showPhotoAlert: boolean;
+  isActive?: boolean;
   images: UmkmImage[];
   categoryId: string | null;
+  socialLinks: { id: string; platform: string; url: string }[];
 }
+
+const SORT_OPTIONS: SortOption[] = [
+  { value: "newest", label: "Terbaru" },
+  { value: "oldest", label: "Terlama" },
+  { value: "name_asc", label: "Nama A-Z" },
+  { value: "name_desc", label: "Nama Z-A" },
+];
 
 interface UmkmCatalogSectionProps {
   categories: Category[];
@@ -35,6 +53,16 @@ interface UmkmCatalogSectionProps {
   currentPage: number;
   currentCategory: string;
   currentSearch: string;
+  currentSort?: string;
+}
+
+function buildPageUrl(search: string, category: string, sort: string, page: number) {
+  const params = new URLSearchParams();
+  if (search) params.set("q", search);
+  if (category) params.set("category", category);
+  if (sort && sort !== "newest") params.set("sort", sort);
+  params.set("page", String(page));
+  return `/umkm?${params.toString()}`;
 }
 
 export function UmkmCatalogSection({
@@ -44,108 +72,166 @@ export function UmkmCatalogSection({
   currentPage,
   currentCategory,
   currentSearch,
+  currentSort = "newest",
 }: UmkmCatalogSectionProps) {
   const router = useRouter();
   const [search, setSearch] = useState(currentSearch);
+  const [sort, setSort] = useState(currentSort);
+  const [category, setCategory] = useState(currentCategory);
+
+  const categoryOptions = [
+    { value: "", label: "Semua" },
+    ...categories.map((c) => ({ value: c.id, label: c.name })),
+  ];
+
+  const activeChips: FilterChip[] = [];
+  if (search) {
+    activeChips.push({ id: "search", label: `"${search}"`, value: search });
+  }
+  if (category) {
+    const cat = categories.find((c) => c.id === category);
+    if (cat) {
+      activeChips.push({ id: "category", label: cat.name, value: category });
+    }
+  }
+  if (sort !== "newest") {
+    const opt = SORT_OPTIONS.find((o) => o.value === sort);
+    if (opt) {
+      activeChips.push({ id: "sort", label: opt.label, value: sort });
+    }
+  }
 
   const handleSearch = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
+    (value: string) => {
+      setSearch(value);
+      const params = new URLSearchParams();
+      if (value) params.set("q", value);
+      if (currentCategory) params.set("category", currentCategory);
+      if (sort) params.set("sort", sort);
+      router.push(`/umkm?${params.toString()}`);
+    },
+    [currentCategory, sort, router]
+  );
+
+  const handleSort = useCallback(
+    (value: string) => {
+      setSort(value);
       const params = new URLSearchParams();
       if (search) params.set("q", search);
       if (currentCategory) params.set("category", currentCategory);
-      router.push(`/?${params.toString()}`);
+      params.set("sort", value);
+      router.push(`/umkm?${params.toString()}`);
     },
     [search, currentCategory, router]
   );
 
   const handleCategoryChange = useCallback(
-    (categoryId: string) => {
+    (value: string) => {
+      setCategory(value);
       const params = new URLSearchParams();
       if (search) params.set("q", search);
-      if (categoryId) params.set("category", categoryId);
-      router.push(`/?${params.toString()}`);
+      if (value) params.set("category", value);
+      if (sort) params.set("sort", sort);
+      router.push(`/umkm?${params.toString()}`);
     },
-    [search, router]
+    [search, sort, router]
   );
 
-  const clearSearch = useCallback(() => {
+  const handleRemoveChip = useCallback(
+    (id: string) => {
+      const params = new URLSearchParams();
+      if (id === "search") {
+        setSearch("");
+        if (category) params.set("category", category);
+        if (sort !== "newest") params.set("sort", sort);
+      } else if (id === "category") {
+        setCategory("");
+        if (search) params.set("q", search);
+        if (sort !== "newest") params.set("sort", sort);
+      } else if (id === "sort") {
+        setSort("newest");
+        if (search) params.set("q", search);
+        if (category) params.set("category", category);
+      }
+      router.push(`/umkm?${params.toString()}`);
+    },
+    [search, category, sort, router]
+  );
+
+  const handleClearAll = useCallback(() => {
     setSearch("");
-    const params = new URLSearchParams();
-    if (currentCategory) params.set("category", currentCategory);
-    router.push(`/?${params.toString()}`);
-  }, [currentCategory, router]);
+    setCategory("");
+    setSort("newest");
+    router.push("/umkm");
+  }, [router]);
+
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
-    <section id="umkm" className="py-16 md:py-24 bg-[#F5F3F0]">
+    <section id="umkm" className="py-20 md:py-28 bg-background">
       <PageContainer>
-        {/* Header with title and search */}
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8">
-          <div>
-            <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-[#6B6B6B] block mb-3">
-              Jelajahi
-            </span>
-            <h2 className="font-sans text-3xl md:text-5xl font-medium tracking-tight text-[#1A1A1A]">
+        <div className="flex flex-col gap-6 mb-10">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <h2 className="font-display text-3xl md:text-5xl font-normal tracking-[-0.03em] text-foreground">
               UMKM Lokal
             </h2>
+            <div className="hidden md:flex items-center gap-3">
+              <SearchInput
+                value={search}
+                onChange={handleSearch}
+                placeholder="Cari UMKM..."
+                className="w-full md:w-80"
+              />
+              {categories.length > 0 && (
+                <SortDropdown
+                  options={categoryOptions}
+                  value={category}
+                  onChange={handleCategoryChange}
+                />
+              )}
+              <SortDropdown
+                options={SORT_OPTIONS}
+                value={sort}
+                onChange={handleSort}
+              />
+            </div>
           </div>
 
-          <form onSubmit={handleSearch} className="relative w-full md:w-80">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B6B6B]" />
-            <input
-              type="text"
+          <div className="flex flex-col gap-3 md:hidden">
+            <SearchInput
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={handleSearch}
               placeholder="Cari UMKM..."
-              className="w-full pl-11 pr-10 py-3 bg-white rounded-full border border-[#E5E2DD] text-sm text-[#1A1A1A] placeholder:text-[#6B6B6B] focus:outline-none focus:border-[#D5D0CA] transition-colors"
             />
-            {search && (
-              <button
-                type="button"
-                onClick={clearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full bg-[#EDEAE6] hover:bg-[#E5E2DD] transition-colors"
-              >
-                <X className="h-3 w-3 text-[#6B6B6B]" />
-              </button>
-            )}
-          </form>
+            <div className="flex items-center gap-3">
+              {categories.length > 0 && (
+                <SortDropdown
+                  options={categoryOptions}
+                  value={category}
+                  onChange={handleCategoryChange}
+                  align="left"
+                />
+              )}
+              <SortDropdown
+                options={SORT_OPTIONS}
+                value={sort}
+                onChange={handleSort}
+              />
+            </div>
+          </div>
+
+          {activeChips.length > 0 && (
+            <FilterChips
+              chips={activeChips}
+              onRemove={handleRemoveChip}
+              onClearAll={handleClearAll}
+            />
+          )}
         </div>
 
-        {/* Category filter tabs */}
-        {categories.length > 0 && (
-          <div className="mb-8 flex flex-wrap gap-2 hide-scrollbar">
-            <button
-              onClick={() => handleCategoryChange("")}
-              className={cn(
-                "rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-300",
-                !currentCategory
-                  ? "bg-[#1A1A1A] text-white"
-                  : "bg-white text-[#6B6B6B] border border-[#E5E2DD] hover:border-[#D5D0CA]"
-              )}
-            >
-              Semua
-            </button>
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => handleCategoryChange(cat.id)}
-                className={cn(
-                  "rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-300",
-                  currentCategory === cat.id
-                    ? "bg-[#1A1A1A] text-white"
-                    : "bg-white text-[#6B6B6B] border border-[#E5E2DD] hover:border-[#D5D0CA]"
-                )}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* UMKM grid */}
         {umkmList.length === 0 ? (
           <div className="py-16 text-center">
-            <p className="text-[#6B6B6B]">
+            <p className="text-muted-foreground">
               {currentSearch
                 ? `Tidak ada UMKM yang ditemukan untuk "${currentSearch}"`
                 : currentCategory
@@ -154,61 +240,60 @@ export function UmkmCatalogSection({
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
             {umkmList.map((umkm, index) => (
               <motion.div
                 key={umkm.id}
+                className="h-full"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
                   duration: 0.5,
                   delay: index * 0.06,
-                  ease: [0.25, 0.46, 0.45, 0.94],
+                  ease: [0.16, 1, 0.3, 1],
                 }}
               >
-                <Link
-                  href={`/umkm/${umkm.id}`}
-                  className="group block overflow-hidden rounded-xl bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)]"
-                >
-                  <div className="aspect-[4/5] overflow-hidden bg-[#EDEAE6]">
-                    {umkm.images[umkm.thumbnailIndex]?.url || umkm.images[0]?.url ? (
-                      <img
-                        src={umkm.images[umkm.thumbnailIndex]?.url || umkm.images[0]?.url}
-                        alt={umkm.namaUsaha}
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <span className="text-5xl font-light text-[#D5D0CA]">
-                          {umkm.namaUsaha.charAt(0)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-5">
-                    <h3 className="text-base font-medium text-[#1A1A1A] line-clamp-1">
-                      {umkm.namaUsaha}
-                    </h3>
-                    <div className="mt-2 flex items-center gap-1.5 text-sm text-[#6B6B6B]">
-                      <MapPin className="h-3.5 w-3.5 shrink-0" />
-                      <span className="line-clamp-1">{umkm.alamat}</span>
-                    </div>
-                  </div>
-                </Link>
+                <UmkmCard umkm={umkm} />
               </motion.div>
             ))}
           </div>
         )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
-          <div className="mt-12">
-            <MinimalPagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              basePath="/"
-            />
-          </div>
+          <nav className="mt-12 flex items-center justify-center gap-1" aria-label="Pagination">
+            {currentPage > 1 && (
+              <Link
+                href={buildPageUrl(currentSearch, currentCategory, currentSort, currentPage - 1)}
+                className="px-3 py-1.5 rounded-[12px] border border-border/50 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-150"
+              >
+                &larr;
+              </Link>
+            )}
+
+            {pages.map((page) => (
+              <Link
+                key={page}
+                href={buildPageUrl(currentSearch, currentCategory, currentSort, page)}
+                className={cn(
+                  "px-3 py-1.5 rounded-[12px] text-sm transition-colors duration-150",
+                  page === currentPage
+                    ? "border border-foreground text-foreground font-semibold"
+                    : "border border-border/50 text-muted-foreground/50 hover:text-foreground hover:bg-muted"
+                )}
+              >
+                {page}
+              </Link>
+            ))}
+
+            {currentPage < totalPages && (
+              <Link
+                href={buildPageUrl(currentSearch, currentCategory, currentSort, currentPage + 1)}
+                className="px-3 py-1.5 rounded-[12px] border border-border/50 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-150"
+              >
+                &rarr;
+              </Link>
+            )}
+          </nav>
         )}
       </PageContainer>
     </section>
