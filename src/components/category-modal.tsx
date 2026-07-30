@@ -64,8 +64,8 @@ export function CategoryModal({
       toast.success("Kategori berhasil ditambahkan");
       setNewName("");
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || "Gagal menambahkan kategori");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Gagal menambahkan kategori");
     } finally {
       setCreating(false);
     }
@@ -83,8 +83,8 @@ export function CategoryModal({
       toast.success("Kategori berhasil diperbarui");
       setEditingId(null);
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || "Gagal memperbarui kategori");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Gagal memperbarui kategori");
     } finally {
       setSavingEdit(false);
     }
@@ -101,8 +101,8 @@ export function CategoryModal({
       await deleteCategory(id);
       toast.success("Kategori berhasil dihapus");
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || "Gagal menghapus kategori");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Gagal menghapus kategori");
     } finally {
       setDeletingId(null);
     }
@@ -113,7 +113,7 @@ export function CategoryModal({
       <DialogTrigger render={children as React.ReactElement} />
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-[#1A1A1A]">Kelola Kategori</DialogTitle>
+          <DialogTitle className="text-foreground">Kelola Kategori</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -123,12 +123,12 @@ export function CategoryModal({
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="Nama kategori baru"
-              className="h-9 border-[#E5E2DD] text-sm"
+              className="h-9 border-border text-sm"
               disabled={creating}
             />
             <Button
               type="submit"
-              variant="coffee"
+              variant="default"
               size="sm"
               className="gap-1.5 shrink-0"
               disabled={creating || !newName.trim()}
@@ -145,21 +145,21 @@ export function CategoryModal({
           {/* Category list */}
           <div className="space-y-1 max-h-[300px] overflow-y-auto">
             {categories.length === 0 ? (
-              <p className="py-4 text-center text-sm text-[#6B6B6B]">
+              <p className="py-4 text-center text-sm text-muted-foreground">
                 Belum ada kategori
               </p>
             ) : (
               categories.map((cat) => (
                 <div
                   key={cat.id}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2.5 hover:bg-[#EDEAE6]/50 transition-colors group"
+                  className="flex items-center gap-2 px-3 py-2.5 hover:bg-muted/50 transition-colors group"
                 >
                   {editingId === cat.id ? (
                     <>
                       <Input
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
-                        className="h-8 flex-1 border-[#E5E2DD] text-sm"
+                        className="h-8 flex-1 border-border text-sm"
                         disabled={savingEdit}
                         autoFocus
                         onKeyDown={(e) => {
@@ -177,7 +177,7 @@ export function CategoryModal({
                         {savingEdit ? (
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
                         ) : (
-                          <Check className="h-3.5 w-3.5 text-[#2D9C5A]" />
+                          <Check className="h-3.5 w-3.5 text-green-600" />
                         )}
                       </Button>
                       <Button
@@ -193,10 +193,10 @@ export function CategoryModal({
                   ) : (
                     <>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[#1A1A1A] truncate">
+                        <p className="text-sm font-normal text-foreground truncate">
                           {cat.name}
                         </p>
-                        <p className="text-xs text-[#6B6B6B]">
+                        <p className="text-xs text-muted-foreground">
                           {cat._count.umkms} UMKM
                         </p>
                       </div>
@@ -209,7 +209,7 @@ export function CategoryModal({
                           setEditName(cat.name);
                         }}
                       >
-                        <Pencil className="h-3.5 w-3.5 text-[#6B6B6B]" />
+                        <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -221,7 +221,7 @@ export function CategoryModal({
                         {deletingId === cat.id ? (
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
                         ) : (
-                          <Trash2 className="h-3.5 w-3.5 text-[#6B6B6B] hover:text-[#D94F4F]" />
+                          <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-red-500" />
                         )}
                       </Button>
                     </>
