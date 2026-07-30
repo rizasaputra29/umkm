@@ -7,6 +7,11 @@ datasource db {
   provider = "postgresql"
 }
 
+enum UserRole {
+  ADMIN
+  USER
+}
+
 // Better Auth models
 model User {
   id            String    @id @default(cuid())
@@ -14,6 +19,7 @@ model User {
   email         String    @unique
   emailVerified Boolean   @default(false)
   image         String?
+  role          UserRole  @default(USER)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
@@ -69,22 +75,35 @@ model Verification {
   @@map("verification")
 }
 
+enum UmkmStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // UMKM models
 model Umkm {
-  id           String       @id @default(cuid())
-  namaUsaha    String       @map("nama_usaha")
-  deskripsi    String
-  alamat       String
-  namaPemilik  String       @map("nama_pemilik")
-  whatsapp     String
-  tanggalMulai DateTime     @map("tanggal_mulai")
-  thumbnailIndex Int        @default(0) @map("thumbnail_index")
-  categoryId   String?      @map("category_id")
-  category     Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  createdAt    DateTime     @default(now()) @map("created_at")
-  updatedAt    DateTime     @updatedAt @map("updated_at")
-  socialLinks  SocialLink[]
-  images       UmkmImage[]
+  id              String       @id @default(cuid())
+  namaUsaha       String       @map("nama_usaha")
+  deskripsi       String
+  alamat          String
+  namaPemilik     String       @map("nama_pemilik")
+  whatsapp        String
+  tanggalMulai    DateTime     @map("tanggal_mulai")
+  alamatPribadi   String       @map("alamat_pribadi")
+  thumbnailIndex  Int          @default(0) @map("thumbnail_index")
+  showPhotoAlert  Boolean      @default(false) @map("show_photo_alert")
+  isActive        Boolean      @default(true) @map("is_active")
+  status          UmkmStatus   @default(APPROVED) @map("status")
+  approvedAt      DateTime?    @map("approved_at")
+  rejectedAt      DateTime?    @map("rejected_at")
+  rejectionReason String?      @map("rejection_reason")
+  categoryId      String?      @map("category_id")
+  category        Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  socialLinks     SocialLink[]
+  images          UmkmImage[]
 
   @@index([categoryId])
   @@map("umkm")
@@ -125,31 +144,18 @@ model Testimonial {
 }
 
 model HeroBanner {
-  id             String        @id @default(cuid())
-  title          String?
-  subtitle       String?
-  link           String?
-  active         Boolean       @default(true)
-  order          Int           @default(0)
-  thumbnailIndex Int           @default(0) @map("thumbnail_index")
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
-  images         BannerImage[]
+  id          String    @id @default(cuid())
+  title       String?
+  subtitle    String?
+  link        String?
+  image       String
+  mobileImage String?   @map("mobile_image")
+  active      Boolean   @default(true)
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@map("hero_banners")
-}
-
-model BannerImage {
-  id        String     @id @default(cuid())
-  bannerId  String     @map("banner_id")
-  publicId  String     @map("public_id")
-  url       String
-  urutan    Int
-  createdAt DateTime   @default(now()) @map("created_at")
-  banner    HeroBanner @relation(fields: [bannerId], references: [id], onDelete: Cascade)
-
-  @@index([bannerId])
-  @@map("banner_images")
 }
 
 // Category model
@@ -163,4 +169,30 @@ model Category {
   umkms     Umkm[]
 
   @@map("categories")
+}
+
+model AboutContent {
+  id         String   @id @default(cuid())
+  title      String
+  paragraph1 String
+  paragraph2 String
+  ctaText    String   @default("Jelajahi UMKM")
+  ctaLink    String   @default("#umkm")
+  active     Boolean  @default(true)
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("about_content")
+}
+
+model MetricsContent {
+  id           String   @id @default(cuid())
+  sectionTitle String
+  label1       String
+  label2       String
+  label3       String
+  label4       String
+  active       Boolean  @default(true)
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("metrics_content")
 }
