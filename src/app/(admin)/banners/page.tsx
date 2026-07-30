@@ -19,34 +19,34 @@ export default async function BannersPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-medium tracking-tight text-[#1A1A1A]">
+        <h1 className="text-2xl font-normal tracking-tight text-foreground">
           Hero Banners
         </h1>
         <Link href="/banners/new">
-          <Button variant="coffee" className="gap-2">
+          <Button variant="default" className="gap-2">
             <Plus className="h-4 w-4" />
             Tambah Banner
           </Button>
         </Link>
       </div>
 
-      <div className="rounded-xl border border-[#E5E2DD] bg-white overflow-hidden">
+      <div className="rounded-[12px] border border-border/50 bg-card p-6">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className="text-[11px] uppercase tracking-[0.15em] text-[#6B6B6B]">
+              <TableHead className="text-[11px] tracking-[0.15em] text-muted-foreground">
                 Gambar
               </TableHead>
-              <TableHead className="text-[11px] uppercase tracking-[0.15em] text-[#6B6B6B]">
+              <TableHead className="text-[11px] tracking-[0.15em] text-muted-foreground">
                 Judul
               </TableHead>
-              <TableHead className="text-[11px] uppercase tracking-[0.15em] text-[#6B6B6B]">
+              <TableHead className="text-[11px] tracking-[0.15em] text-muted-foreground">
                 Status
               </TableHead>
-              <TableHead className="text-[11px] uppercase tracking-[0.15em] text-[#6B6B6B]">
+              <TableHead className="text-[11px] tracking-[0.15em] text-muted-foreground">
                 Urutan
               </TableHead>
-              <TableHead className="text-[11px] uppercase tracking-[0.15em] text-[#6B6B6B] text-right">
+              <TableHead className="text-[11px] tracking-[0.15em] text-muted-foreground text-right">
                 Aksi
               </TableHead>
             </TableRow>
@@ -54,47 +54,45 @@ export default async function BannersPage() {
           <TableBody>
             {banners.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-12 text-[#6B6B6B]">
+                <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
                   Belum ada banner
                 </TableCell>
               </TableRow>
             ) : (
-              banners.map((b) => {
-                const thumbnailUrl = b.images[b.thumbnailIndex]?.url || b.images[0]?.url;
-                return (
-                <TableRow key={b.id}>
+              banners.map((b) => (
+                <TableRow key={b.id} className="hover:bg-muted/50">
                   <TableCell>
-                    <div className="w-20 h-12 rounded-lg overflow-hidden bg-[#EDEAE6]">
-                      {thumbnailUrl ? (
+                    <div className="w-20 h-12 overflow-hidden rounded bg-muted">
+                      {b.image ? (
                         <Image
-                          src={thumbnailUrl}
+                          src={b.image}
                           alt={b.title || "Banner"}
                           width={80}
                           height={48}
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-[10px] text-[#6B6B6B]">
+                        <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground">
                           No image
                         </div>
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-[#1A1A1A]">
+                  <TableCell className="text-sm text-foreground">
                     {b.title || "-"}
                   </TableCell>
                   <TableCell>
                     <span
-                      className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wider ${
+                      className={`inline-block px-2 py-0.5 text-[10px] font-medium tracking-wider rounded ${
                         b.active
                           ? "bg-green-100 text-green-700"
-                          : "bg-[#EDEAE6] text-[#6B6B6B]"
+                          : "bg-muted text-muted-foreground"
                       }`}
                     >
                       {b.active ? "Aktif" : "Nonaktif"}
                     </span>
                   </TableCell>
-                  <TableCell className="text-sm text-[#6B6B6B]">
+                  <TableCell className="text-sm text-muted-foreground">
                     {b.order}
                   </TableCell>
                   <TableCell className="text-right">
@@ -103,7 +101,7 @@ export default async function BannersPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-[#6B6B6B] hover:text-[#1A1A1A]"
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
@@ -112,8 +110,7 @@ export default async function BannersPage() {
                     </div>
                   </TableCell>
                 </TableRow>
-                );
-              })
+              ))
             )}
           </TableBody>
         </Table>

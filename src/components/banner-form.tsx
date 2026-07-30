@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Image from "next/image";
 import { Loader2, ArrowRight, Upload, X } from "lucide-react";
 import { useRef, useState, useCallback } from "react";
 
@@ -20,7 +21,6 @@ interface BannerFormProps {
 
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "";
 const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "default";
-const MAX_IMAGES = 5;
 
 export function BannerForm({
   defaultValues,
@@ -28,15 +28,13 @@ export function BannerForm({
   submitLabel = "Simpan",
 }: BannerFormProps) {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState<string[]>([]);
-  const [dragOver, setDragOver] = useState(false);
+  const [uploadingField, setUploadingField] = useState<"image" | "mobileImage" | null>(null);
 
   const form = useForm<BannerFormValues>({
-    resolver: zodResolver(bannerSchema) as any,
+    resolver: zodResolver(bannerSchema),
     defaultValues: {
-      images: [],
-      thumbnailIndex: 0,
+      image: "",
+      mobileImage: "",
       title: "",
       subtitle: "",
       link: "",
@@ -60,15 +58,14 @@ export function BannerForm({
     }
   }
 
-  const inputClass = "h-10 border-0 border-b border-[#D5D0CA] bg-transparent px-0 text-sm text-[#1A1A1A] focus-visible:ring-0 focus-visible:border-[#1A1A1A] placeholder:text-[#6B6B6B]";
-  const labelClass = "text-[11px] font-medium uppercase tracking-[0.15em] text-[#6B6B6B]";
+  const inputClass = "h-10 border-0 border-b border-border bg-transparent px-0 text-sm text-foreground focus-visible:ring-0 focus-visible:border-foreground placeholder:text-muted-foreground";
+  const labelClass = "text-[11px] font-normal tracking-[0.15em] text-muted-foreground";
 
-  const images = form.watch("images");
+  const image = form.watch("image"); // eslint-disable-line react-hooks/incompatible-library
+  const mobileImage = form.watch("mobileImage");
 
-  const uploadToCloudinary = useCallback(async (file: File) => {
-    const tempId = `temp-${Date.now()}-${file.name}`;
-    setUploading((prev) => [...prev, tempId]);
-
+  const uploadToCloudinary = useCallback(async (file: File, field: "image" | "mobileImage") => {
+    setUploadingField(field);
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -82,125 +79,114 @@ export function BannerForm({
       if (!res.ok) throw new Error("Upload gagal");
 
       const data = await res.json();
-      const current = form.getValues("images");
-      form.setValue("images", [...current, { publicId: data.public_id, url: data.secure_url }], { shouldValidate: true });
+      form.setValue(field, data.secure_url, { shouldValidate: true });
     } catch {
-      toast.error(`Gagal mengupload ${file.name}`);
+      toast.error(`Gagal mengupload gambar`);
     } finally {
-      setUploading((prev) => prev.filter((id) => id !== tempId));
+      setUploadingField(null);
     }
   }, [form]);
 
-  const handleFiles = useCallback(async (files: FileList | File[]) => {
-    const current = form.getValues("images");
-    const remaining = MAX_IMAGES - current.length - uploading.length;
-    const toUpload = Array.from(files).slice(0, remaining);
-    if (toUpload.length === 0) {
-      toast.error(`Maksimal ${MAX_IMAGES} gambar`);
-      return;
-    }
-    await Promise.all(toUpload.map(uploadToCloudinary));
-  }, [form, uploading.length, uploadToCloudinary]);
-
-  const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) handleFiles(e.target.files);
+  const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>, field: "image" | "mobileImage") => {
+    const file = e.target.files?.[0];
+    if (file) uploadToCloudinary(file, field);
     e.target.value = "";
-  }, [handleFiles]);
+  }, [uploadToCloudinary]);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    if (e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
-  }, [handleFiles]);
+  function ImageUploadField({
+    field,
+    label,
+    value,
+    required,
+  }: {
+    field: "image" | "mobileImage";
+    label: string;
+    value: string;
+    required?: boolean;
+  }) {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const isUploading = uploadingField === field;
 
-  function removeImage(index: number) {
-    const current = form.getValues("images");
-    const newImages = current.filter((_, i) => i !== index);
-    form.setValue("images", newImages, { shouldValidate: true });
-  }
-
-  return (
-    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+    return (
       <div className="space-y-3">
-        <label className={labelClass}>Gambar Banner</label>
-        <div className="rounded-xl border border-[#E5E2DD] bg-white p-4 space-y-4">
-          {/* Drop zone */}
-          <div
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className={`w-full rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-3 py-8 cursor-pointer transition-colors ${
-              dragOver
-                ? "border-[#6B6B6B] bg-[#F5F3F0]"
-                : "border-[#D5D0CA] hover:border-[#6B6B6B] text-[#6B6B6B] hover:text-[#1A1A1A]"
-            }`}
-          >
-            <div className="flex items-center gap-2 rounded-lg border border-[#D5D0CA] bg-white px-4 py-2 text-sm font-medium text-[#1A1A1A] shadow-sm">
-              <Upload className="h-4 w-4" />
-              Upload
+        <label className={labelClass}>
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+        <div className="rounded border border-border bg-background p-4 space-y-3">
+          {value ? (
+            <div className="relative aspect-video overflow-hidden bg-surface-container-low border border-border">
+              <Image
+                src={value}
+                alt={label}
+                fill
+                className="object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => form.setValue(field, "", { shouldValidate: true })}
+                className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors"
+              >
+                <X className="h-3 w-3" />
+              </button>
             </div>
-            <span className="text-xs text-[#6B6B6B]">
-              Choose images or drag & drop it here. JPG, JPEG, PNG and WEBP. Max 20 MB.
-            </span>
-          </div>
+          ) : (
+            <div
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                const file = e.dataTransfer.files[0];
+                if (file) uploadToCloudinary(file, field);
+              }}
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full border-2 border-dashed flex flex-col items-center justify-center gap-3 py-8 cursor-pointer transition-colors duration-150 border-border hover:border-foreground text-muted-foreground hover:text-foreground"
+            >
+              {isUploading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 border border-border bg-background px-4 py-2 text-sm font-normal text-foreground">
+                    <Upload className="h-4 w-4" />
+                    Upload
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    JPG, JPEG, PNG, WEBP. Max 20 MB.
+                  </span>
+                </>
+              )}
+            </div>
+          )}
 
           <input
             ref={fileInputRef}
             type="file"
             accept="image/jpeg,image/png,image/webp"
-            multiple
-            onChange={handleFileInput}
+            onChange={(e) => handleFileInput(e, field)}
             className="hidden"
           />
-
-          {/* Image grid */}
-          {(images.length > 0 || uploading.length > 0) && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-              {images.map((image, index) => (
-                <div
-                  key={image.publicId}
-                  className="relative aspect-square rounded-lg overflow-hidden bg-[#EDEAE6] group border border-[#E5E2DD]"
-                >
-                  <img
-                    src={image.url}
-                    alt={`Gambar ${index + 1}`}
-                    className="h-full w-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeImage(index);
-                    }}
-                    className="absolute top-2 right-2 w-6 h-6 bg-[#D94F4F] text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
-              {uploading.map((tempId) => (
-                <div
-                  key={tempId}
-                  className="relative aspect-square rounded-lg overflow-hidden bg-[#EDEAE6] border border-[#E5E2DD] flex items-center justify-center"
-                >
-                  <Loader2 className="h-5 w-5 text-[#6B6B6B] animate-spin" />
-                </div>
-              ))}
-            </div>
-          )}
-
-          <p className="text-[11px] text-[#6B6B6B]">
-            {images.length}/{MAX_IMAGES} gambar diupload
-            {uploading.length > 0 && ` (${uploading.length} mengupload...)`}
-          </p>
         </div>
-        {form.formState.errors.images && (
-          <p className="text-sm text-[#D94F4F]">
-            {form.formState.errors.images.message}
+        {form.formState.errors[field as keyof BannerFormValues] && (
+          <p className="text-sm text-red-500">
+            {form.formState.errors[field]?.message}
           </p>
         )}
       </div>
+    );
+  }
+
+  return (
+    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <ImageUploadField
+        field="image"
+        label="Gambar Desktop"
+        value={image}
+        required
+      />
+
+      <ImageUploadField
+        field="mobileImage"
+        label="Gambar Mobile (opsional)"
+        value={mobileImage}
+      />
 
       <Controller
         name="title"
@@ -294,15 +280,15 @@ export function BannerForm({
               type="checkbox"
               checked={field.value}
               onChange={field.onChange}
-              className="w-4 h-4 rounded border-[#D5D0CA] text-[#1A1A1A] focus:ring-[#1A1A1A]"
+              className="w-4 h-4 rounded border-border text-foreground focus:ring-foreground"
             />
-            <span className="text-sm text-[#1A1A1A]">Banner aktif</span>
+            <span className="text-sm text-foreground">Banner aktif</span>
           </label>
         )}
       />
 
       <div className="flex gap-4 pt-4">
-        <Button type="submit" variant="coffee" disabled={isSubmitting} className="gap-2">
+        <Button type="submit" variant="default" disabled={isSubmitting} className="gap-2">
           {isSubmitting ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
@@ -312,7 +298,7 @@ export function BannerForm({
             </>
           )}
         </Button>
-        <Button type="button" variant="ghost" onClick={() => router.back()} className="text-[#6B6B6B] hover:text-[#1A1A1A]">
+        <Button type="button" variant="ghost" onClick={() => router.back()} className="text-muted-foreground hover:text-foreground">
           Batal
         </Button>
       </div>
